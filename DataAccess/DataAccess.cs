@@ -6,18 +6,19 @@ using System.Globalization;
 using System.Threading.Tasks;
 using Sql.Library;
 using System.Data.SqlClient;
+using System.Data;
 
 namespace DataAccess
 {
     public class DataAccess
     {
         private SQL_Query dbManager = new SQL_Query();
+        private AdoNet adoMng = new AdoNet();
         public DataAccess() { }
 
         Boolean insertQuery()
         {
             Boolean b = false;
-
             return b;
         }
 
@@ -28,6 +29,31 @@ namespace DataAccess
             return dbManager.insertQuery(queryString.ToString());
         }
 
+        public string getUserRole(string email)
+        {
+            String role = "";
+            StringBuilder queryString = new StringBuilder();
+            queryString.AppendFormat("SELECT tipo FROM Usuarios WHERE email='{0}'", email);
+            dbManager.Open();
+            SqlDataReader r = dbManager.readQuery(queryString.ToString());
+            if (r.Read())
+                role = r[0].ToString();
+            dbManager.Close();
+            return role;
+        }
+
+        public bool correctUser(string email, string role)
+        {
+            return userExists(email, role);
+        }
+
+        public DataSet getConfirmCodeDataSet(string email)
+        {
+            StringBuilder queryString = new StringBuilder();
+            queryString.AppendFormat("SELECT CodAsig FROM TareasGenericas AS tg INNER JOIN EstudiantesTareas AS et ON tg.Codigo=et.CodTarea WHERE Email='{0}'", email);
+            return adoMng.selectDataSet("TareasGenericas", queryString.ToString());
+        }
+
         public string getPassword(string email)
         {
             String password = "";
@@ -36,17 +62,25 @@ namespace DataAccess
             dbManager.Open();
             SqlDataReader r = dbManager.readQuery(queryString.ToString());
             if (r.Read())
-                password =  r[0].ToString();
+                password = r[0].ToString();
             dbManager.Close();
             return password;
         }
 
         public bool userExists(string email)
         {
+          return userExists(email, "$role!");
+        }
+
+        protected bool userExists(string email, string role = "$role!")
+        {
             Boolean b;
             StringBuilder queryString = new StringBuilder();
             dbManager.Open();
-            queryString.AppendFormat("SELECT email FROM Usuarios WHERE email='{0}'", email);
+            if (role.Equals("$role!"))
+                queryString.AppendFormat("SELECT email FROM Usuarios WHERE email='{0}'", email);
+            if (role.Equals("Alumno") || role.Equals("Profesor"))
+                queryString.AppendFormat("SELECT email FROM Usuarios WHERE email='{0}' AND tipo='{1}'", email, role);
             b = (dbManager.readQuery(queryString.ToString()).HasRows ? true : false);
             dbManager.Close();
             return b;
@@ -83,7 +117,7 @@ namespace DataAccess
             StringBuilder queryString = new StringBuilder();
             queryString.AppendFormat("SELECT numconfir FROM Usuarios WHERE email='{0}'", email);
             dbManager.Open();
-            SqlDataReader dataReader =  dbManager.readQuery(queryString.ToString());
+            SqlDataReader dataReader = dbManager.readQuery(queryString.ToString());
             if (dataReader.Read())
                 numConf = dataReader[0].ToString();
             dbManager.Close();
@@ -95,10 +129,11 @@ namespace DataAccess
             List<List<string>> users = new List<List<string>>();
             dbManager.Open();
             SqlDataReader reader = dbManager.readQuery("SELECT * FROM Usuarios");
-            while (reader.Read()) {
+            while (reader.Read())
+            {
                 List<String> elements = new List<string>();
                 for (int i = 0; i < reader.FieldCount; i++)
-                    elements.Add(string.Format("{0}",reader[i]));
+                    elements.Add(string.Format("{0}", reader[i]));
                 users.Add(elements);
             }
             dbManager.Close();

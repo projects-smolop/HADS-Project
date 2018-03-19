@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,6 +16,23 @@ namespace BusinessLogic4WA
         public bool registeUser(string email, string name, string lastName, int numConf, bool isVerify, string type, string password)
         {
            return ado.insertUser(email, name, lastName, numConf, isVerify, type, password); 
+        }
+
+        public DataSet getSubjectCodesDataSet(string email)
+        {
+            return ado.getConfirmCodeDataSet(email);
+        }
+
+        public string getUserRole(string email)
+        {
+            return ado.getUserRole(email);
+        }
+
+        public bool correctUser(string email, string role)
+        {
+            if (!userExists(email))
+                return false;
+            return ado.correctUser(email, role);
         }
 
         public bool passwordIsCorrect(string email, string password)
