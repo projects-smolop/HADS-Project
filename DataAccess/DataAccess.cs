@@ -29,6 +29,48 @@ namespace DataAccess
             return dbManager.insertQuery(queryString.ToString());
         }
 
+        public DataSet getTareasGenericasDataSet(string subject)
+        {
+            StringBuilder queryString = new StringBuilder();
+            queryString.AppendFormat("SELECT * FROM TareasGenericas WHERE CodAsig='{0}'", subject);
+            return adoMng.selectDataSet("TareasGenericas", queryString.ToString());
+        }
+
+        public DataSet getTareasGenericasDataSet()
+        {
+            StringBuilder queryString = new StringBuilder();
+            queryString.AppendFormat("SELECT * FROM TareasGenericas");
+            return adoMng.selectDataSet("TareasGenericas", queryString.ToString());
+        }
+
+        public DataSet getSubjectProfesorDataSet(string email)
+        {
+            StringBuilder queryString = new StringBuilder();
+            queryString.AppendFormat("SELECT DISTINCT gc.codigoasig FROM GruposClase AS gc INNER JOIN ProfesoresGrupo AS pg ON pg.codigogrupo = gc.codigo WHERE pg.email = '{0}'", email);
+            return adoMng.selectDataSet("GruposClase", queryString.ToString());
+        }
+
+        public DataSet getOnlySubjectDataSet(string email)
+        {
+            StringBuilder queryString = new StringBuilder();
+            queryString.AppendFormat("SELECT CodAsig FROM TareasGenericas AS tg INNER JOIN EstudiantesTareas AS et ON tg.Codigo=et.CodTarea WHERE Email='{0}'", email);
+            return adoMng.selectDataSet("TareasGenericas", queryString.ToString());
+        }
+
+        public DataSet getStudenTasksDataSet(string email, string codAsig)
+        {
+            StringBuilder queryString = new StringBuilder();
+            queryString.AppendFormat("SELECT tg.Codigo, tg.Descripcion, tg.CodAsig, et.HEstimadas, et.HReales, tg.Explotacion, tg.TipoTarea FROM TareasGenericas AS tg INNER JOIN EstudiantesTareas AS et ON tg.Codigo = et.CodTarea WHERE et.Email = '{0}' AND tg.CodAsig = '{1}' AND tg.Explotacion = 'true' AND et.HReales > 0", email, codAsig);
+            return adoMng.selectDataSet(queryString.ToString());
+        }
+
+        public DataSet getSubjectDataSet(string email)
+        {
+            StringBuilder queryString = new StringBuilder();
+            queryString.AppendFormat("SELECT CodAsig FROM TareasGenericas AS tg INNER JOIN EstudiantesTareas AS et ON tg.Codigo=et.CodTarea WHERE Email='{0}'", email);
+            return adoMng.selectDataSet("TareasGenericas", queryString.ToString());
+        }
+
         public string getUserRole(string email)
         {
             String role = "";
@@ -72,7 +114,7 @@ namespace DataAccess
           return userExists(email, "$role!");
         }
 
-        protected bool userExists(string email, string role = "$role!")
+        protected bool userExists(string email, string role)
         {
             Boolean b;
             StringBuilder queryString = new StringBuilder();

@@ -18,9 +18,28 @@ namespace BusinessLogic4WA
            return ado.insertUser(email, name, lastName, numConf, isVerify, type, password); 
         }
 
+        public DataSet getTareasGenericasDataSet()
+        {
+            return ado.getTareasGenericasDataSet();
+        }
+
+        public DataSet getSubjectsProfesorDataSet(string email)
+        {
+            return ado.getSubjectProfesorDataSet(email);
+        }
+
+        public DataSet getTareasGenericasDataSet(string subject)
+        {
+            return ado.getTareasGenericasDataSet(subject);
+        }
+
         public DataSet getSubjectCodesDataSet(string email)
         {
-            return ado.getConfirmCodeDataSet(email);
+            return ado.getSubjectDataSet(email);
+        }
+        public DataSet getOnlySubjectsDataSet(string email)
+        {
+            return ado.getOnlySubjectDataSet(email);
         }
 
         public string getUserRole(string email)
@@ -43,7 +62,12 @@ namespace BusinessLogic4WA
             return  password == pass;
 
         }
-        
+
+        public DataSet getStudentTasksDataSet(string email, string codAsig)
+        {
+            return ado.getStudenTasksDataSet(email, codAsig);
+        }
+
         public bool userExists(string email)
         {
             return ado.userExists(email);
