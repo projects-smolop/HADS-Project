@@ -11,11 +11,13 @@ namespace BusinessLogic4WA
     public class BusinessLogic
     {
         private DataAccess.DataAccess ado = new DataAccess.DataAccess();
+        private byte[] Buffer = new byte[0];
         public BusinessLogic() {}
        
         public bool registeUser(string email, string name, string lastName, int numConf, bool isVerify, string type, string password)
         {
-           return ado.insertUser(email, name, lastName, numConf, isVerify, type, password); 
+            String encryptedPassword = EncryptTripleDES(password, "!@3$A");
+           return ado.insertUser(email, name, lastName, numConf, isVerify, type, encryptedPassword); 
         }
 
         public DataSet getTareasGenericasDataSet()
@@ -58,9 +60,8 @@ namespace BusinessLogic4WA
         {
             if (!userExists(email))
                 return false;
-            String pass = ado.getPassword(email);
+            String pass = DecryptTripleDES(ado.getPassword(email), "!@3$A");
             return  password == pass;
-
         }
 
         public DataSet getStudentTasksDataSet(string email, string codAsig)
@@ -98,7 +99,7 @@ namespace BusinessLogic4WA
         {
             bool b = false;
             if (isPasswordMatched(password, repassword))
-                if (ado.updatePassword(email, password))
+                if (ado.updatePassword(email, EncryptTripleDES(password, "!@3$A")))
                     b = true;
             return b;
         }
@@ -112,5 +113,47 @@ namespace BusinessLogic4WA
         {
             return ado.updateConfirmNum(numConf, email);
         }
+
+        //Encryption method for credit card
+        public string EncryptTripleDES(string Plaintext, string Key)
+        {
+            System.Security.Cryptography.TripleDESCryptoServiceProvider DES = new System.Security.Cryptography.TripleDESCryptoServiceProvider();
+            System.Security.Cryptography.MD5CryptoServiceProvider hashMD5 = new System.Security.Cryptography.MD5CryptoServiceProvider();
+            DES.Key = hashMD5.ComputeHash(System.Text.ASCIIEncoding.ASCII.GetBytes(Key));
+            DES.Mode = System.Security.Cryptography.CipherMode.ECB;
+            System.Security.Cryptography.ICryptoTransform DESEncrypt = DES.CreateEncryptor();
+            Buffer = System.Text.ASCIIEncoding.ASCII.GetBytes(Plaintext);
+            string TripleDES = Convert.ToBase64String(DESEncrypt.TransformFinalBlock(Buffer, 0, Buffer.Length));
+            return TripleDES;
+        }
+
+        //Decryption Method 
+        public string DecryptTripleDES(string base64Text, string Key)
+        {
+            System.Security.Cryptography.TripleDESCryptoServiceProvider DES = new System.Security.Cryptography.TripleDESCryptoServiceProvider();
+            System.Security.Cryptography.MD5CryptoServiceProvider hashMD5 = new System.Security.Cryptography.MD5CryptoServiceProvider();
+            DES.Key = hashMD5.ComputeHash(System.Text.ASCIIEncoding.ASCII.GetBytes(Key));
+            DES.Mode = System.Security.Cryptography.CipherMode.ECB;
+            System.Security.Cryptography.ICryptoTransform DESDecrypt = DES.CreateDecryptor();
+            Buffer = Convert.FromBase64String(base64Text);
+            string DecTripleDES = System.Text.ASCIIEncoding.ASCII.GetString(DESDecrypt.TransformFinalBlock(Buffer, 0, Buffer.Length));
+            return DecTripleDES;
+        }
+
+
+        public void passwordUpadter()
+        {
+            List<List<string>> userList = new List<List<string>>();
+            String user2update, pass2update;
+            userList = getUSers();
+
+            foreach (List<string> user in userList) {
+                user2update = user.ElementAt(0).ToString();
+                pass2update = user.ElementAt(user.Count).ToString();
+                changePassword(user2update, pass2update, pass2update);
+            }
+
+        }
+
     }
 }

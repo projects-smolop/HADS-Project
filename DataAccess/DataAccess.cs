@@ -121,7 +121,7 @@ namespace DataAccess
             dbManager.Open();
             if (role.Equals("$role!"))
                 queryString.AppendFormat("SELECT email FROM Usuarios WHERE email='{0}'", email);
-            if (role.Equals("Alumno") || role.Equals("Profesor"))
+            if (role.Equals("Alumno") || role.Equals("Profesor") || role.Equals("Administrador"))
                 queryString.AppendFormat("SELECT email FROM Usuarios WHERE email='{0}' AND tipo='{1}'", email, role);
             b = (dbManager.readQuery(queryString.ToString()).HasRows ? true : false);
             dbManager.Close();
