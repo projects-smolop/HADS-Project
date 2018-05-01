@@ -39,6 +39,12 @@ namespace BusinessLogic4WA
         {
             return ado.getSubjectDataSet(email);
         }
+
+        public float getOverWorkFromSubject(string subject)
+        {
+            return ado.getAvg_OverWork(subject);
+        }
+
         public DataSet getOnlySubjectsDataSet(string email)
         {
             return ado.getOnlySubjectDataSet(email);
@@ -54,6 +60,11 @@ namespace BusinessLogic4WA
             if (!userExists(email))
                 return false;
             return ado.correctUser(email, role);
+        }
+
+        public object getStudentQuantity(string subject)
+        {
+            return ado.getStudentQuantity(subject);
         }
 
         public bool passwordIsCorrect(string email, string password)

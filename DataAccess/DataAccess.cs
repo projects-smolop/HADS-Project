@@ -36,6 +36,61 @@ namespace DataAccess
             return adoMng.selectDataSet("TareasGenericas", queryString.ToString());
         }
 
+        public DataSet getAllSubjects()
+        {
+            StringBuilder queryString = new StringBuilder();
+            queryString.AppendFormat("select codigo from Asignaturas");
+            return adoMng.selectDataSet("Asignaturas", queryString.ToString());
+        }
+
+        public float getAvg_OverWork(string subject)
+        {
+            StringBuilder sb = new StringBuilder();
+            float avgOverWork = 0;
+            float aux = -1F;
+            sb.AppendFormat("select avg(HReales) from tareasGenericas as tg join estudiantesTareas as et on tg.Codigo=et.CodTarea where tg.CodAsig='{0}'", subject);
+            dbManager.Open();
+            SqlDataReader dr = dbManager.readQuery(sb.ToString());
+            if (dr.Read())
+                if (dr[0] != null)
+                    if(dr[0] is int || dr[0] is float)
+                    avgOverWork = float.Parse(dr[0].ToString());
+            dbManager.Close();
+            return avgOverWork;
+        }
+
+        public float getStudentQuantity(string subject)
+        {
+            StringBuilder sb = new StringBuilder();
+            float studentsQuantity = 0;
+            sb.AppendFormat("select count(DISTINCT et.email) from tareasGenericas as tg join estudiantesTareas as et on tg.Codigo=et.CodTarea where tg.CodAsig='{0}'", subject);
+            dbManager.Open();
+            SqlDataReader dr = dbManager.readQuery(sb.ToString());
+            if (dr.Read())
+                if (dr[0] != null)
+                    if (dr[0] is int || dr[0] is float)
+                        studentsQuantity = float.Parse(dr[0].ToString());
+            dbManager.Close();
+            return studentsQuantity;
+        }
+
+        public List<string> getEmailsWith(string subject)
+        {
+            List<string> emails = new List<string>();
+            StringBuilder sb = new StringBuilder();
+            sb.AppendFormat("select eg.email from GruposClase as gc inner join EstudiantesGrupo as eg on gc.codigo=eg.grupo where gc.codigoasig='{0}'", subject);
+
+            dbManager.Open();
+            SqlDataReader reader = dbManager.readQuery(sb.ToString());
+            while (reader.Read())
+            {
+                for (int i = 0; i < reader.FieldCount; i++)
+                    emails.Add(string.Format("{0}", reader[i]));
+            }
+            dbManager.Close();
+            return emails;
+        }
+
         public DataSet getTareasGenericasDataSet()
         {
             StringBuilder queryString = new StringBuilder();
@@ -111,7 +166,7 @@ namespace DataAccess
 
         public bool userExists(string email)
         {
-          return userExists(email, "$role!");
+            return userExists(email, "$role!");
         }
 
         protected bool userExists(string email, string role)
